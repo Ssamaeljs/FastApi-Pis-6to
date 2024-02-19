@@ -1,62 +1,40 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Header
 from starlette.responses import RedirectResponse
 from pydantic import BaseModel
-from models.persona import Persona
+import models.persona as persona
+import models.cuenta as cuenta
 import datetime
+from hooks.conexion import Conexion
 app = FastAPI()
 
 @app.get("/", include_in_schema=False)
 def raiz():
     return RedirectResponse(url="/docs")
 
-@app.post("/registrarse")
-def registrarse(persona: Persona):
-    return {"msg": "Registrado exitosamente", "code": 200, "persona": persona}
-
-@app.post("/iniciar_sesion")
-def iniciar_sesion(correo: str, clave: str):
-    if correo != "user.example@unl.edu.ec" or clave != "12345678":
-        return {"msg": "Credenciales incorrectas", "code": 200}
-    return {"msg": "Bienvenido Usuario", 
-            "code": 200, 
-            "user": {
-                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
-                "nombre": "User",
-                "apellido": "Example",
-                "external_id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
-                "cuenta": {
-                    "correo": correo,
-                    "rol": "USUARIO",
-                    "descripcion": "Usuario de prueba",
-                    "descripcion_pdf": "a157b0da-a14d-4584-8fe7-a43a762a14d0.pdf",
-                    "estado": "EN ESPERA",
-                    "external_id": "d290f1ee-6c54-4b01-90e6-d701748f0851"
-                    }
-                }
-            }
-
-@app.get("/listar/dispositivo")
+@app.get("/listar/api_dispositivo", tags=["Dispositivo"])
 def listar_dispositivos():
-    return {"msg": "Listado de dispositivos", 
-            "code": 200, 
-            "info": [
-                {
-                    "nombre": "Dispositivo 1",
-                    "descripcion": "Dispositivo de prueba 1",
-                    "external_id": "d290f1ee-6c54-4b01-90e6-d701748f0851"
-                    
-                    },
-                {
-                    "nombre": "Dispositivo 2",
-                    "descripcion": "Dispositivo de prueba 2",
-                    "external_id": "d290f1ee-6c54-4b01-90e6-d701748f0852"
-                    },
-                {
-                    "nombre": "Dispositivo 3",
-                    "descripcion": "Dispositivo de prueba 3",
-                    "external_id": "d290f1ee-6c54-4b01-90e6-d701748f0853"
-                    }
-                ]
-            }
-        
-    
+    return Conexion.GET("listar/api_dispositivo")
+
+@app.get("/activos", tags=["Dispositivo"])
+def listar_activos():
+    return Conexion.GET("activos", server="unl")
+
+@app.get("/medicionDispositivos", tags=["Medición de Dispositivos"])
+def listar_medicion_individual_dispositivos():
+    return Conexion.GET("medicionDispositivos", server="unl")
+
+@app.get("/medicionDispositivos", tags=["Medición de Dispositivos"])
+def listar_medicion_individual_dispositivos():
+    return Conexion.GET("medicionPromedio", server="unl")
+
+@app.post("/medicionFechas", tags=["Medición de Dispositivos"])
+def listar_medicion_fechas(fechas: persona.Fechas):
+    return Conexion.POST(fechas, "medicionFechas", server="unl")
+
+@app.post("/medicionSemana", tags=["Medición de Dispositivos"])
+def listar_medicion_fechas(fechas: persona.Fechas):
+    return Conexion.POST(fechas, "medicionSemana", server="unl")
+
+@app.post("/medicionDia", tags=["Medición de Dispositivos"])
+def listar_medicion_fechas(fechas: persona.Fechas):
+    return Conexion.POST(fechas, "medicionDia", server="unl")
